@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>PixiJS - Template</title>
+  </head>
+
+  <body>
+    <div id="app">
+      <div id="pixi-container"></div>
+    </div>
+    <!-- <button id="myButton">full screen</button> -->
+    <script type="module" src="/src/main.ts"></script>
+    <!-- <script>
+      function openFullscreen() {
+        let elem = document.getElementById("myCanvas"); // Or your canvas element
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+          /* Safari */
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          /* IE11 */
+          elem.msRequestFullscreen();
+        }
+      }
+
+      function closeFullscreen() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          /* Safari */
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          /* IE11 */
+          document.msExitFullscreen();
+        }
+      }
+      document.getElementById("myButton").addEventListener("click", () => {
+        if (document.fullscreenElement) {
+          closeFullscreen();
+        } else {
+          openFullscreen();
+        }
+      }); -->
+    </script>
+  </body>
+</html>
