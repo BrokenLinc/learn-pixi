@@ -1,99 +1,40 @@
-import { Application, Container, Graphics, Text, Ticker } from "pixi.js";
+import * as Pixi from "pixi.js";
+import * as utils from "./utils";
 
-const strokeStyle = { color: 0x44ffdd, pixelLine: true };
-const textStyle = { fontFamily: "Arial", fontSize: 8, fill: 0xff44dd };
+const { ss } = utils;
 
 (async () => {
-  // Create a new application
-  const app = new Application();
+  const { app, audioSwitch, logs } = await utils.createApp();
 
-  // Initialize the application
-  await app.init({ background: "#000000", resizeTo: window });
+  const root = new Pixi.Container();
+  app.stage.addChild(root);
 
-  // Append the application canvas to the document body
-  document.getElementById("pixi-container")!.appendChild(app.canvas);
+  // const triangle = utils.createPoly();
+  // root.addChild(triangle);
 
-  // // Load the bunny texture
-  // const texture = await Assets.load("/assets/bunny.png");
+  const star15 = utils.createStar({ points: 1299, radius: 1200 });
+  root.addChild(star15);
 
-  // // Create a bunny Sprite
-  // const bunny = new Sprite(texture);
-
-  // // Center the sprite's anchor point
-  // bunny.anchor.set(0.5);
-
-  // // Move the sprite to the center of the screen
-  // bunny.position.set(app.screen.width / 2, app.screen.height / 2);
-
-  // Create and add a container to the stage
-  const container = new Container();
-
-  app.stage.addChild(container);
-
-  const lineContainer = new Container();
-
-  container.addChild(lineContainer);
-
-  // Create a Graphics object and draw a pixel-perfect line
-  const graphics = new Graphics()
-    .moveTo(-2200 / 2, 0)
-    .lineTo(2200 / 2, 0)
-    .stroke(strokeStyle);
-
-  const basicText = new Text({
-    text: "0",
-    style: textStyle,
+  const star16 = utils.createStar({
+    points: 299,
+    radius: 240,
+    color: 0x991155,
   });
-  graphics.addChild(basicText);
+  root.addChild(star16);
 
-  // Add it to the stage
-  lineContainer.addChild(graphics);
+  // const star5 = utils.createStar({ points: 5 });
+  // root.addChild(star5);
 
-  const circleContainer = new Container();
-
-  container.addChild(circleContainer);
-
-  const circles: { graphics: Graphics; scanRotation: number }[] = [];
-  for (let i = 0; i < 200; i++) {
-    const x = (Math.random() - 0.5) * window.screen.width;
-    const y = (Math.random() - 0.5) * window.screen.height;
-    const scanRotation = (Math.atan2(y, x) + Math.PI) % Math.PI;
-    const graphics = new Graphics()
-      .circle(x, y, Math.random() * 4 + 1)
-      .stroke(strokeStyle);
-    const basicText = new Text({
-      x: x + 10,
-      y: y - 5,
-      text: [Math.round(x), Math.round(y), scanRotation.toFixed(2)].join(", "),
-      style: textStyle,
-    });
-    circleContainer.addChild(graphics);
-    graphics.addChild(basicText);
-    circles.push({
-      graphics,
-      scanRotation: Math.atan2(y, x),
-    });
-  }
-
-  // // Add the bunny to the stage
-  // app.stage.addChild(bunny);
-
-  // Listen for animate update
-  app.ticker.add((time: Ticker) => {
-    // Just for fun, let's rotate mr rabbit a little.
-    // * Delta is 1 if running at 100% performance *
-    // * Creates frame-independent transformation *
-    container.x = app.screen.width / 2;
-    container.y = app.screen.height / 2;
-    lineContainer.rotation =
-      (lineContainer.rotation + 0.005 * time.deltaTime) % Math.PI;
-    circles.forEach(circle => {
-      const scanProgress =
-        ((lineContainer.rotation - circle.scanRotation + Math.PI) % Math.PI) /
-        Math.PI;
-      circle.graphics.alpha = 1 - scanProgress;
-      // circle.graphics.angle = -scanProgress * 100;
-    });
-    basicText.text = lineContainer.rotation.toFixed(2);
+  app.ticker.add((ticker: Pixi.Ticker) => {
+    const ms = performance.now();
+    star15.rotation = ms / 100000;
+    star16.rotation = ms / 100000;
   });
+
+  const position = () => {
+    root.x = app.screen.width / 2;
+    root.y = app.screen.height / 2;
+  };
+  window.addEventListener("resize", position);
+  position();
 })();
