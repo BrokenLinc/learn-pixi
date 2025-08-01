@@ -29,38 +29,50 @@ import * as utils from "./utils";
   const star = utils.createStar({ points: 5, radius: 100 });
   root.addChild(star);
 
-  // Add child elements to the star
+  // Add child elements to the star - positioned at exact radii
   const starChild1 = utils.createPoly({ points: 3, radius: 30 });
   star.addChild(starChild1);
   const starChild2 = utils.createPoly({ points: 4, radius: 50 });
   star.addChild(starChild2);
 
-  const circle = utils.createCircle({ radius: 150 });
+  const circle = utils.createCircle({ radius: 200 });
   root.addChild(circle);
 
-  // Add child elements to the circle
-  const circleChild1 = utils.createStar({ points: 3, radius: 20 });
+  // Add child elements to the circle - positioned at exact radii
+  const circleChild1 = utils.createStar({ points: 3, radius: 30 });
   circle.addChild(circleChild1);
-  const circleChild2 = utils.createPoly({ points: 6, radius: 40 });
+  const circleChild2 = utils.createPoly({ points: 6, radius: 60 });
   circle.addChild(circleChild2);
 
-  const hexagon = utils.createPoly({ points: 6, radius: 200 });
+  const hexagon = utils.createPoly({ points: 6, radius: 300 });
   root.addChild(hexagon);
 
-  // Add child elements to the hexagon
-  const hexChild1 = utils.createCircle({ radius: 25 });
+  // Add child elements to the hexagon - positioned at exact radii
+  const hexChild1 = utils.createCircle({ radius: 40 });
   hexagon.addChild(hexChild1);
-  const hexChild2 = utils.createStar({ points: 4, radius: 35 });
+  const hexChild2 = utils.createStar({ points: 4, radius: 70 });
   hexagon.addChild(hexChild2);
 
   // Create audio elements
   const synth = new Tone.Synth().toDestination();
   const oscillator = new Tone.Oscillator("B1", "triangle").toDestination();
 
-  // Create drum-like sounds
-  const kick = new Tone.MembraneSynth().toDestination();
-  const snare = new Tone.NoiseSynth().toDestination();
-  const hihat = new Tone.MetalSynth().toDestination();
+  // Create drum-like sounds with smoother settings
+  const kick = new Tone.MembraneSynth({
+    pitchDecay: 0.8,
+    octaves: 1,
+    oscillator: { type: "sine" },
+    envelope: { decay: 0.4, sustain: 0.1, release: 0.8 },
+  }).toDestination();
+
+  const snare = new Tone.NoiseSynth({
+    noise: { type: "white" },
+    envelope: { decay: 0.2, sustain: 0.1, release: 0.4 },
+  }).toDestination();
+
+  const hihat = new Tone.MetalSynth({
+    envelope: { attack: 0.01, decay: 0.1, release: 0.2 },
+  }).toDestination();
 
   // Set very low volumes
   kick.volume.value = -30;
@@ -90,32 +102,23 @@ import * as utils from "./utils";
     circleChild2.rotation = -ms / 2200;
     circleChild1.scale.set(Math.cos(ms / 1000) * 0.4 + 1);
 
-    // Rotate the hexagon at a third speed with dramatic position wobble
+    // Rotate the hexagon at a third speed
     hexagon.rotation = ms / 3000;
-    hexagon.x = Math.sin(ms / 800) * 30;
-    hexagon.y = Math.cos(ms / 800) * 30;
 
     // Animate hexagon children
     hexChild1.rotation = -ms / 1600;
     hexChild2.rotation = ms / 2800;
     hexChild1.scale.set(Math.sin(ms / 900) * 0.2 + 1);
 
-    // Drum beats that respond to visual animations
+    // Deep beats and low hums only
     if (audioSwitch.enabled) {
-      // Kick on star scale peaks
-      if (Math.sin(ms / 2000) > 0.8) {
-        kick.triggerAttackRelease("C1", 0.1);
+      // Deep kick on star scale peaks
+      if (Math.sin(ms / 2000) > 0.95) {
+        kick.triggerAttackRelease("C0", 0.3);
       }
 
-      // Snare on circle opacity peaks
-      if (Math.sin(ms / 1500) > 0.8) {
-        snare.triggerAttackRelease(0.1);
-      }
-
-      // Hihat on hexagon wobble
-      if (Math.abs(Math.sin(ms / 800)) > 0.9) {
-        hihat.triggerAttackRelease("C2", 0.05);
-      }
+      // Low hum that follows the overall movement
+      oscillator.frequency.value = Math.abs(Math.sin(ms / 4000)) * 40 + 30;
     }
 
     // Play a sound on beat
@@ -124,8 +127,5 @@ import * as utils from "./utils";
         // synth.triggerAttackRelease("G3", 0.1);
       }
     });
-
-    // Modulate the ambient tone
-    oscillator.frequency.value = Math.abs(Math.sin(ms / 40)) * 80 + 20;
   });
 })();
