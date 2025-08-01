@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+# Code Comments
+
+Always include comments on any code that is not obviously self explanatory. Keep them short and meaningful. Information density is key.
+
+Code comments should succinctly denote the purpose or what is being accomplished by the code, not just paraphrasing the code operations themselves.
+
+Commenting code explains the history of the thought process behind the code, making it easier for humans to read, and for AI agents to build upon.

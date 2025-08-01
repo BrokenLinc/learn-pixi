@@ -1,5 +1,8 @@
 import * as Pixi from "pixi.js";
 
+/**
+ * Common styles for this project's artistic theme
+ */
 export const ss = {
   stroke: {
     color: 0x44ffdd,

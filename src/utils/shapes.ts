@@ -3,6 +3,10 @@ import { Application, Container, Graphics, Text } from "pixi.js";
 const strokeStyle = { color: 0x44ffdd, pixelLine: true };
 const textStyle = { fontFamily: "EditUndo", fontSize: 13.9, fill: 0xff44dd };
 
+/**
+ * Creates a pixel line that moves down the screen. over time, the restarts at the top.
+ * This is a top-level utility shape that has it's own build, re-position, and draw routines.
+ */
 export const createScanLine = ({
   app,
   container: parentContainer,
@@ -53,6 +57,10 @@ export const createScanLine = ({
   };
 };
 
+/**
+ * Creates a circle of a specific radius.
+ * This is a top-level utility shape that has it's own build and re-position draw routines.
+ */
 export const createCircle = ({
   app,
   container: parentContainer,
@@ -60,7 +68,6 @@ export const createCircle = ({
 }: {
   app: Application;
   container?: Container;
-  points?: number;
   radius?: number;
 }) => {
   // Build object tree
@@ -86,6 +93,11 @@ export const createCircle = ({
   };
 };
 
+/**
+ * Creates a polygon of a specific radius.
+ * The points will connect in a convex way, creating shapes like a triangle or hexagon.
+ * This is a top-level utility shape that has it's own build and re-position draw routines.
+ */
 export const createPolygon = ({
   app,
   container: parentContainer,
@@ -130,6 +142,11 @@ export const createPolygon = ({
   };
 };
 
+/**
+ * Creates a polygon of a specific radius.
+ * The points will connect in a convex way, creating shapes like a triangle or hexagon.
+ * This is a simple shape that can be appended to any other node by the caller.
+ */
 export const createPoly = ({
   points = 3,
   radius = 100,
@@ -142,6 +159,7 @@ export const createPoly = ({
   const draw = () => {
     graphics.clear();
     for (let i = 0; i <= points; i++) {
+      // This math positions the "poly" points in the correct sequence.
       const degree = (i / points) * Math.PI * 2;
       const x = Math.cos(degree) * radius;
       const y = Math.sin(degree) * radius;
@@ -158,6 +176,11 @@ export const createPoly = ({
   return graphics;
 };
 
+/**
+ * Creates a star of a specific radius.
+ * The points will connect in a concave way, creating pointy stars with overlapping lines.
+ * This is a utility shape that has it's own build and re-position draw routines.
+ */
 export const createStar = ({
   points = 5,
   radius = 100,
@@ -172,6 +195,7 @@ export const createStar = ({
   const draw = () => {
     graphics.clear();
     for (let i = 0; i <= points; i++) {
+      // This math positions the "star" points in the correct sequence.
       const degree = (i / points) * Math.PI * (points - 1);
       const x = Math.cos(degree) * radius;
       const y = Math.sin(degree) * radius;
@@ -188,6 +212,11 @@ export const createStar = ({
   return graphics;
 };
 
+/**
+ * Creates a wreath of a specific radius.
+ * The points will connect in an braided way, creating shapes that look like a wreath.
+ * This is a utility shape that has it's own build and re-position draw routines.
+ */
 export const createWreath = ({
   points = 5,
   radius = 100,
@@ -200,6 +229,7 @@ export const createWreath = ({
   const draw = () => {
     graphics.clear();
     for (let i = 0; i <= points; i++) {
+      // This math positions the "wreath" points in the correct sequence.
       const degree = (i / points) * Math.PI * 4;
       const x = Math.cos(degree) * radius;
       const y = Math.sin(degree) * radius;

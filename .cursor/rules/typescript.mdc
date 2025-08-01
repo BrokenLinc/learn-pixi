@@ -1,0 +1,14 @@
+---
+description: Writing Typescript according to our best practices.
+alwaysApply: false
+---
+
+# Typescript
+
+Follow industry best practices, except where it would lead to complex code that is difficult for novices to read.
+
+## Rules of thumb
+
+Avoid the use of the `any` type, but it is acceptable when we want to avoid complex generics and abstractions that will clutter the codebase.
+
+Make use of the `type-fest` library's utility types to write cleaner, simpler code.

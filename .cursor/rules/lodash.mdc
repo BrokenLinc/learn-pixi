@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+## Lodash
+
+Make use of the `lodash` utility library to write cleaner, simpler code.
+
+Access elements of the `lodash` namespace with a top level `_` import. Do not use named imports on individual methods.
+
+For native methods like those available in the `Array` namespace and essentially are identical (eg. `reduce`), writing native code is fine.

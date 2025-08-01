@@ -1,0 +1,23 @@
+---
+alwaysApply: true
+---
+
+# Project Overview
+
+This is an experimental digital art project. It is a web application composed of animated graphics using PixiJS, and soundscapes using ToneJS.
+
+## Deployment context
+
+The app is to be played on a standalone computer in a headless browser, full-screen. It may be played on a computer monitor or projector. It's expected to play at HD resolutions (1080p or 4K) and run at 60fps. We expect to give the machine full CPU and GPU focus to maximize performance, and we should consider that graphic performance is the primary driver as we create animation sequences.
+
+## Artistic themes
+
+The pieces in this application are built to feel like mesmerizing, complex mechanisms. Similar to the movement of a clock, or the stars and planets.
+
+Instead of sequencing animations imperatively, we utilize the Pixi ticker and the current time to drive animations generatively. This is similar to how shader language works in concept, but in our app we draw elements to the canvas and manipulate sound nodes.
+
+Sacred geometry and platonic shapes. Floral, fractal arrangements that are as much geometric as they are organic. Harmonic mathematical proportions in visual and sound. Often centered on the screen, or radially symmetric.
+
+Typographic elements are to use the pixel fonts installed in the app, and every positioning and rendering technique to make them as crisp and pixel-perfect as possible.
+
+Soundscapes are often set up once as a tree of ToneJS nodes, and then manipulated in the ticker.
