@@ -31,18 +31,19 @@ import * as utils from "./utils";
     rotationSpeed: 0.5, // Rotate at 0.5 radians per second
   });
 
-  // Create multiple pulsars using polar coordinate grid
-  const pulsars = Array.from({ length: 50 }, (_, index) => {
-    // Use grid-based angles: n/64 of 2PI for musical spacing around full circle
+  // Create multiple pulsars using polar coordinate grid with random snapping
+  const pulsars = Array.from({ length: 50 }, () => {
+    // Random angle that gets snapped to nearest 64th division
+    const randomAngle = Math.random() * Math.PI * 2; // Random angle 0 to 2π
     const angleStep = (Math.PI * 2) / 64; // 64 divisions around full circle
-    const angle = (index % 64) * angleStep; // Use all 64 divisions (0 to 2π)
+    const snappedAngle = Math.round(randomAngle / angleStep) * angleStep; // Snap to nearest division
 
     // Random radius between 50 and 300 pixels
     const radius = 50 + Math.random() * 250;
 
     // Convert polar to cartesian coordinates
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
+    const x = Math.cos(snappedAngle) * radius;
+    const y = Math.sin(snappedAngle) * radius;
 
     return utils.createPulsar({
       app,
