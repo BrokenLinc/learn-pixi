@@ -31,19 +31,50 @@ import * as utils from "./utils";
     rotationSpeed: 0.5, // Rotate at 0.5 radians per second
   });
 
-  // Create multiple pulsars using polar coordinate grid with random snapping
+  // Define pentatonic scale and radius mapping (stable across all pulsars)
+  const pentatonicRatios = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3]; // Major pentatonic: C, D, E, G, A
+  const minRadius = 50;
+  const maxRadius = 300;
+  const baseRadius = minRadius;
+  const radiusRange = maxRadius - minRadius;
+  const pentatonicRadii = pentatonicRatios.map(
+    ratio => baseRadius + (ratio - 1) * (radiusRange / 2)
+  );
+
+  // Create mapping from radius to pentatonic frequency
+  const baseFrequency = 440; // A4 as base note
+  const pentatonicFrequencies = pentatonicRatios.map(
+    ratio => baseFrequency * ratio
+  );
+
+  // Function to get frequency from radius
+  const getFrequencyFromRadius = (radius: number) => {
+    // Find the closest pentatonic radius and return its corresponding frequency
+    const closestIndex = pentatonicRadii.reduce(
+      (closestIndex, currentRadius, index) =>
+        Math.abs(currentRadius - radius) <
+        Math.abs(pentatonicRadii[closestIndex] - radius)
+          ? index
+          : closestIndex,
+      0
+    );
+    return pentatonicFrequencies[closestIndex];
+  };
+
+  // Create multiple pulsars using polar coordinate grid with pentatonic radius selection
   const pulsars = Array.from({ length: 50 }, () => {
     // Random angle that gets snapped to nearest 64th division
     const randomAngle = Math.random() * Math.PI * 2; // Random angle 0 to 2π
     const angleStep = (Math.PI * 2) / 64; // 64 divisions around full circle
     const snappedAngle = Math.round(randomAngle / angleStep) * angleStep; // Snap to nearest division
 
-    // Random radius between 50 and 300 pixels
-    const radius = 50 + Math.random() * 250;
+    // Randomly select from pentatonic radii
+    const selectedRadius =
+      pentatonicRadii[Math.floor(Math.random() * pentatonicRadii.length)];
 
     // Convert polar to cartesian coordinates
-    const x = Math.cos(snappedAngle) * radius;
-    const y = Math.sin(snappedAngle) * radius;
+    const x = Math.cos(snappedAngle) * selectedRadius;
+    const y = Math.sin(snappedAngle) * selectedRadius;
 
     return utils.createPulsar({
       app,
@@ -101,13 +132,9 @@ import * as utils from "./utils";
 
       // Play sound if radar passed over the pulsar
       if (isPulsarBetween) {
-        // Calculate frequency based on distance (closer = higher frequency)
+        // Get frequency from pentatonic scale based on radius
         const distance = pulsar.getDistance();
-        const maxDistance = Math.sqrt(
-          Math.pow(app.screen.width / 2, 2) + Math.pow(app.screen.height / 2, 2)
-        );
-        // Map distance to frequency: 50px = 1200Hz, maxDistance = 200Hz
-        const frequency = 1200 - (distance / maxDistance) * 1000;
+        const frequency = getFrequencyFromRadius(distance);
 
         // Only play sound if audio is enabled
         if (audioSwitch.enabled) {
