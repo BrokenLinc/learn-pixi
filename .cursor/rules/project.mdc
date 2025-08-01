@@ -1,23 +1,38 @@
----
-alwaysApply: true
----
-
 # Project Overview
 
-This is an experimental digital art project. It is a web application composed of animated graphics using PixiJS, and soundscapes using ToneJS.
+This is an experimental digital art playground for creating generative, time-based visual experiences using PixiJS and ToneJS.
 
-## Deployment context
+## Artistic Vision
 
-The app is to be played on a standalone computer in a headless browser, full-screen. It may be played on a computer monitor or projector. It's expected to play at HD resolutions (1080p or 4K) and run at 60fps. We expect to give the machine full CPU and GPU focus to maximize performance, and we should consider that graphic performance is the primary driver as we create animation sequences.
+Create hypnotic, meditative experiences that reward sustained attention.
 
-## Artistic themes
+### Aesthetic Direction
 
-The pieces in this application are built to feel like mesmerizing, complex mechanisms. Similar to the movement of a clock, or the stars and planets.
+- **Ancient Runes & Alien Technology**: Think crop circles, Da Vinci's mechanical drawings, alien hieroglyphs
+- **High Contrast Pixel Art**: Technically simple graphics that are mesmerizing in composition
+- **Sacred Geometry**: Golden ratios, fibonacci sequences, platonic solids
+- **Clockwork Mechanisms**: Mesmerizing, precise movements that feel both organic and mechanical
+- **God's Eye Perspective**: Designs that feel like they're being viewed from above or from another dimension
 
-Instead of sequencing animations imperatively, we utilize the Pixi ticker and the current time to drive animations generatively. This is similar to how shader language works in concept, but in our app we draw elements to the canvas and manipulate sound nodes.
+### Technical Philosophy
 
-Sacred geometry and platonic shapes. Floral, fractal arrangements that are as much geometric as they are organic. Harmonic mathematical proportions in visual and sound. Often centered on the screen, or radially symmetric.
+- **Performance First**: 60fps is non-negotiable - smooth, hypnotic movement
+- **Time-Based Generation**: Everything driven by mathematical time functions
+- **Audio-Visual Unity**: Sound and visuals share frequencies, variables, and timing
+- **Pixel-Perfect Rendering**: Crisp, high-contrast geometric shapes
+- **Generative Composition**: No keyframes - everything emerges from algorithms
 
-Typographic elements are to use the pixel fonts installed in the app, and every positioning and rendering technique to make them as crisp and pixel-perfect as possible.
+### Development Approach
 
-Soundscapes are often set up once as a tree of ToneJS nodes, and then manipulated in the ticker.
+- **Messy Studio Mentality**: Ideation over perfection, rapid experimentation
+- **Playground Environment**: Quick iteration, throwaway experiments
+- **No User Interaction**: Pure generative experiences
+- **Dedicated Hardware**: MacBook Pro performance allows for complex compositions
+
+# Performance
+
+Prioritize 60fps performance above all else. Use `performance.now()` for time-based animations.
+Avoid creating objects in ticker loops - pre-create and reuse.
+Use object pooling for frequently created/destroyed elements.
+Prefer `Graphics` objects over sprites for geometric shapes.
+Cache frequently used calculations and avoid repeated DOM queries.

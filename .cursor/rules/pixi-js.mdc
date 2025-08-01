@@ -4,3 +4,11 @@ alwaysApply: false
 ---
 
 # PixiJS
+
+Use the ticker for all animations - avoid setTimeout/requestAnimationFrame.
+Pre-create containers and graphics objects, then manipulate them in the ticker.
+Use `pixelLine: true` for crisp geometric shapes.
+Center all content using the root container pattern.
+Handle window resizing gracefully by updating positions in resize handlers.
+Prefer `Graphics` over sprites for geometric and procedural shapes.
+Use object pooling for elements that appear/disappear frequently.
