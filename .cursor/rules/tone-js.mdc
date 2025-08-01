@@ -1,7 +1,29 @@
----
-description: Making music and sound with ToneJS
-alwaysApply: false
----
+# ToneJS
+
+Apply safety measures on sound output volume to prevent damage to speakers or ears.
+
+## Audio Management
+
+All ToneJS oscillators and instruments must be started and stopped in the audio callbacks when using the audio switch:
+
+```typescript
+const { app, audioSwitch } = await utils.createApp({
+  audio: {
+    start: () => {
+      oscillator.start();
+      synth.start();
+      // Start all audio elements here
+    },
+    stop: () => {
+      oscillator.stop();
+      synth.stop();
+      // Stop all audio elements here
+    },
+  },
+});
+```
+
+This ensures proper audio context management and prevents audio from playing without user interaction.
 
 # ToneJS
 

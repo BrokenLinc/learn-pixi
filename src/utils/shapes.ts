@@ -59,87 +59,23 @@ export const createScanLine = ({
 
 /**
  * Creates a circle of a specific radius.
- * This is a top-level utility shape that has it's own build and re-position draw routines.
+ * This is a simple shape that can be appended to any other node by the caller.
  */
 export const createCircle = ({
-  app,
-  container: parentContainer,
   radius = 100,
 }: {
-  app: Application;
-  container?: Container;
   radius?: number;
-}) => {
-  // Build object tree
-  const container = new Container();
-  (parentContainer || app.stage).addChild(container);
+} = {}) => {
   const graphics = new Graphics();
-  container.addChild(graphics);
 
-  // Setup drawing
   const draw = () => {
-    container.x = app.screen.width / 2;
-    container.y = app.screen.height / 2;
-
     graphics.clear();
     graphics.circle(0, 0, radius);
     graphics.stroke(strokeStyle);
   };
   draw();
-  window.addEventListener("resize", draw);
 
-  return {
-    container,
-  };
-};
-
-/**
- * Creates a polygon of a specific radius.
- * The points will connect in a convex way, creating shapes like a triangle or hexagon.
- * This is a top-level utility shape that has it's own build and re-position draw routines.
- */
-export const createPolygon = ({
-  app,
-  container: parentContainer,
-  points = 3,
-  radius = 100,
-}: {
-  app: Application;
-  container?: Container;
-  points?: number;
-  radius?: number;
-}) => {
-  // Build object tree
-  const container = new Container();
-  (parentContainer || app.stage).addChild(container);
-  const graphics = new Graphics();
-  container.addChild(graphics);
-
-  // Setup drawing
-  const draw = () => {
-    container.x = app.screen.width / 2;
-    container.y = app.screen.height / 2;
-
-    graphics.clear();
-    for (let i = 0; i <= points; i++) {
-      const degree = (i / points) * Math.PI * 2;
-      const x = Math.cos(degree) * radius;
-      const y = Math.sin(degree) * radius;
-      if (i == 0) {
-        graphics.moveTo(x, y);
-      } else {
-        graphics.lineTo(x, y);
-      }
-    }
-    graphics.stroke(strokeStyle);
-  };
-  draw();
-  window.addEventListener("resize", draw);
-
-  return {
-    container,
-    graphics,
-  };
+  return graphics;
 };
 
 /**
