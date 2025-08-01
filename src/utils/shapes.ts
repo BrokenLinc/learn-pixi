@@ -181,3 +181,140 @@ export const createWreath = ({
 
   return graphics;
 };
+
+/**
+ * Creates a radar sweep animation with a rotating line from the center.
+ * The line extends beyond the screen bounds and rotates clockwise.
+ * This is a utility shape that has it's own build and update routines.
+ */
+export const createRadarSweep = ({
+  app,
+  container: parentContainer,
+  color = 0x44ffdd,
+  lineWidth = 2,
+  rotationSpeed = 0.5, // radians per second
+}: {
+  app: Application;
+  container?: Container;
+  color?: number;
+  lineWidth?: number;
+  rotationSpeed?: number;
+}) => {
+  // Build object tree
+  const container = new Container();
+  (parentContainer || app.stage).addChild(container);
+  const graphics = new Graphics();
+  container.addChild(graphics);
+
+  // Calculate the maximum distance the line needs to extend
+  const maxDistance = Math.sqrt(
+    Math.pow(app.screen.width / 2, 2) + Math.pow(app.screen.height / 2, 2)
+  );
+
+  // Setup drawing
+  const draw = () => {
+    container.x = app.screen.width / 2;
+    container.y = app.screen.height / 2;
+
+    graphics.clear();
+    // Draw a line from center (0,0) to the maximum distance
+    graphics.moveTo(0, 0).lineTo(maxDistance, 0).stroke({
+      color,
+      width: lineWidth,
+      pixelLine: true,
+    });
+  };
+  draw();
+  window.addEventListener("resize", draw);
+
+  // Time-based rotation
+  const update = ({ ms = performance.now() }: { ms?: number } = {}) => {
+    // Convert milliseconds to seconds and apply rotation speed
+    const rotation = (ms / 1000) * rotationSpeed;
+    graphics.rotation = rotation;
+  };
+
+  return {
+    container,
+    graphics,
+    update,
+  };
+};
+
+/**
+ * Creates a pulsar object - a simple dot at a random location on the screen.
+ * This is a utility shape that can be detected by radar sweeps.
+ */
+export const createPulsar = ({
+  app,
+  container: parentContainer,
+  color = 0xff4444,
+  radius = 4,
+  x,
+  y,
+}: {
+  app: Application;
+  container?: Container;
+  color?: number;
+  radius?: number;
+  x?: number;
+  y?: number;
+}) => {
+  // Build object tree
+  const container = new Container();
+  (parentContainer || app.stage).addChild(container);
+  const graphics = new Graphics();
+  container.addChild(graphics);
+
+  // Generate random position within screen bounds if not provided
+  const generateRandomPosition = () => {
+    const x = (Math.random() - 0.5) * app.screen.width;
+    const y = (Math.random() - 0.5) * app.screen.height;
+    return { x, y };
+  };
+
+  // Setup drawing
+  const draw = () => {
+    const position =
+      x !== undefined && y !== undefined ? { x, y } : generateRandomPosition();
+
+    container.x = app.screen.width / 2 + position.x;
+    container.y = app.screen.height / 2 + position.y;
+
+    graphics.clear();
+    graphics.circle(0, 0, radius).fill({ color });
+  };
+  draw();
+
+  // Get the angle of this pulsar relative to center
+  const getAngle = () => {
+    const dx = container.x - app.screen.width / 2;
+    const dy = container.y - app.screen.height / 2;
+    return Math.atan2(dy, dx);
+  };
+
+  // Get the distance of this pulsar from center
+  const getDistance = () => {
+    const dx = container.x - app.screen.width / 2;
+    const dy = container.y - app.screen.height / 2;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Check if radar sweep is passing over this pulsar
+  const isDetectedByRadar = (radarRotation: number, tolerance = 0.1) => {
+    const pulsarAngle = getAngle();
+    const angleDiff = Math.abs(radarRotation - pulsarAngle);
+    // Normalize angle difference to handle wraparound
+    const normalizedDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+    return normalizedDiff < tolerance;
+  };
+
+  return {
+    container,
+    graphics,
+    getAngle,
+    getDistance,
+    isDetectedByRadar,
+    regeneratePosition: draw,
+  };
+};
