@@ -9,9 +9,10 @@ import * as utils from "./utils";
   // Setup global app & utilities
   const { app, audioSwitch, logs } = await utils.createApp();
 
-  // Create synth sound for sonar pulses
+  // Create audio sounds for different pulsar types
   // Note: Always check audioSwitch.enabled before playing sounds
   const synth = utils.createSynthSound();
+  const bassDrum = utils.createBassDrumSound();
 
   // Create a root container that remains centered on the screen
   const root = new Pixi.Container();
@@ -31,19 +32,30 @@ import * as utils from "./utils";
     rotationSpeed: 0.5, // Rotate at 0.5 radians per second
   });
 
-  // Define pentatonic scale and radius mapping (stable across all pulsars)
+  // Define pentatonic scale across multiple octaves for broader placement
   const pentatonicRatios = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3]; // Major pentatonic: C, D, E, G, A
-  const minRadius = 50;
-  const maxRadius = 300;
+  const octaves = 3; // Cover 3 octaves for richer musical range
+
+  // Create extended pentatonic scale across multiple octaves
+  const extendedPentatonicRatios: number[] = [];
+  for (let octave = 0; octave < octaves; octave++) {
+    pentatonicRatios.forEach(ratio => {
+      extendedPentatonicRatios.push(ratio * Math.pow(2, octave));
+    });
+  }
+
+  const minRadius = 80;
+  const maxRadius = 600; // Much larger radius range
   const baseRadius = minRadius;
   const radiusRange = maxRadius - minRadius;
-  const pentatonicRadii = pentatonicRatios.map(
-    ratio => baseRadius + (ratio - 1) * (radiusRange / 2)
+  const pentatonicRadii = extendedPentatonicRatios.map(
+    ratio =>
+      baseRadius + (ratio - 1) * (radiusRange / (Math.pow(2, octaves) - 1))
   );
 
-  // Create mapping from radius to pentatonic frequency
+  // Create mapping from radius to pentatonic frequency across multiple octaves
   const baseFrequency = 440; // A4 as base note
-  const pentatonicFrequencies = pentatonicRatios.map(
+  const pentatonicFrequencies = extendedPentatonicRatios.map(
     ratio => baseFrequency * ratio
   );
 
@@ -61,29 +73,104 @@ import * as utils from "./utils";
     return pentatonicFrequencies[closestIndex];
   };
 
-  // Create multiple pulsars using polar coordinate grid with pentatonic radius selection
-  const pulsars = Array.from({ length: 50 }, () => {
-    // Random angle that gets snapped to nearest 64th division
-    const randomAngle = Math.random() * Math.PI * 2; // Random angle 0 to 2π
-    const angleStep = (Math.PI * 2) / 64; // 64 divisions around full circle
-    const snappedAngle = Math.round(randomAngle / angleStep) * angleStep; // Snap to nearest division
-
-    // Randomly select from pentatonic radii
-    const selectedRadius =
-      pentatonicRadii[Math.floor(Math.random() * pentatonicRadii.length)];
-
-    // Convert polar to cartesian coordinates
-    const x = Math.cos(snappedAngle) * selectedRadius;
-    const y = Math.sin(snappedAngle) * selectedRadius;
-
-    return utils.createPulsar({
-      app,
+  // Define pulsar configurations for different types
+  const pulsarConfigs = [
+    {
+      name: "melody",
+      count: 50,
       color: 0xff4444,
       radius: 4,
-      x,
-      y,
+      angleDivisions: 64, // 1/64th divisions
+      soundType: "synth",
+      zIndex: 1, // Draw on top
+      placement: "random" as const, // Random placement
+    },
+    {
+      name: "bass",
+      color: 0x4444ff,
+      radius: 8,
+      angleDivisions: 16, // 1/16th divisions
+      soundType: "bass",
+      zIndex: 0, // Draw underneath
+      placement: "grid", // Grid-based placement
+    },
+  ];
+
+  // Create pulsars for all configurations
+  const allPulsars: Array<{ pulsar: any; config: any }> = [];
+
+  pulsarConfigs.forEach(config => {
+    let pulsars: any[] = [];
+
+    if (config.placement === "random" && config.count) {
+      // Random placement for melody pulsars
+      pulsars = Array.from({ length: config.count }, () => {
+        // Random angle that gets snapped to nearest division
+        const randomAngle = Math.random() * Math.PI * 2;
+        const angleStep = (Math.PI * 2) / config.angleDivisions;
+        const snappedAngle = Math.round(randomAngle / angleStep) * angleStep;
+
+        // Randomly select from pentatonic radii
+        const selectedRadius =
+          pentatonicRadii[Math.floor(Math.random() * pentatonicRadii.length)];
+
+        // Convert polar to cartesian coordinates
+        const x = Math.cos(snappedAngle) * selectedRadius;
+        const y = Math.sin(snappedAngle) * selectedRadius;
+
+        return utils.createPulsar({
+          app,
+          color: config.color,
+          radius: config.radius,
+          x,
+          y,
+        });
+      });
+    } else if (config.placement === "grid") {
+      // Grid-based placement for bass pulsars with weighted randomness
+      const angleStep = (Math.PI * 2) / config.angleDivisions;
+
+      // For each 1/16th division, decide based on beat strength
+      for (let index = 0; index < config.angleDivisions; index++) {
+        let chance = 0.5; // default for weak beats
+        if (index % 16 === 0) {
+          chance = 1; // whole note (downbeat)
+        } else if (index % 8 === 0) {
+          chance = 0.9; // half note
+        } else if (index % 4 === 0) {
+          chance = 0.5; // quarter note
+        } else if (index % 2 === 0) {
+          chance = 0.2; // quarter note
+        }
+        if (Math.random() < chance) {
+          const angle = index * angleStep;
+          // Randomly select from pentatonic radii
+          const selectedRadius =
+            pentatonicRadii[Math.floor(Math.random() * pentatonicRadii.length)];
+          // Convert polar to cartesian coordinates
+          const x = Math.cos(angle) * selectedRadius;
+          const y = Math.sin(angle) * selectedRadius;
+          pulsars.push(
+            utils.createPulsar({
+              app,
+              color: config.color,
+              radius: config.radius,
+              x,
+              y,
+            })
+          );
+        }
+      }
+    }
+
+    // Add to all pulsars with their config
+    pulsars.forEach(pulsar => {
+      allPulsars.push({ pulsar, config });
     });
   });
+
+  // Sort by zIndex to ensure proper layering
+  allPulsars.sort((a, b) => a.config.zIndex - b.config.zIndex);
 
   // Track radar rotation for delta-based detection
   let lastRadarRotation = 0;
@@ -111,7 +198,7 @@ import * as utils from "./utils";
 
     // Check all pulsars for radar detection
     let detectedCount = 0;
-    pulsars.forEach((pulsar, index) => {
+    allPulsars.forEach(({ pulsar, config }, index) => {
       const pulsarAngle = pulsar.getAngle();
       const normalizedPulsar = normalizeAngle(pulsarAngle);
 
@@ -132,18 +219,21 @@ import * as utils from "./utils";
 
       // Play sound if radar passed over the pulsar
       if (isPulsarBetween) {
-        // Get frequency from pentatonic scale based on radius
-        const distance = pulsar.getDistance();
-        const frequency = getFrequencyFromRadius(distance);
-
         // Only play sound if audio is enabled
         if (audioSwitch.enabled) {
-          synth.playSonarPulse(frequency);
+          if (config.soundType === "synth") {
+            // Get frequency from pentatonic scale based on radius
+            const distance = pulsar.getDistance();
+            const frequency = getFrequencyFromRadius(distance);
+            synth.playSonarPulse(frequency);
+          } else if (config.soundType === "bass") {
+            bassDrum.playBassDrum();
+          }
         }
 
         detectedCount++;
         console.log(
-          `Pulsar ${index} detected! Distance: ${distance.toFixed(0)}px, Frequency: ${frequency.toFixed(0)}Hz, Previous: ${normalizedPrevious.toFixed(3)}, Current: ${normalizedCurrent.toFixed(3)}, Pulsar: ${normalizedPulsar.toFixed(3)}`
+          `${config.name} pulsar ${index} detected! Distance: ${pulsar.getDistance().toFixed(0)}px, Previous: ${normalizedPrevious.toFixed(3)}, Current: ${normalizedCurrent.toFixed(3)}, Pulsar: ${normalizedPulsar.toFixed(3)}`
         );
       }
     });
