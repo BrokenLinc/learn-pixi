@@ -13,6 +13,7 @@ import * as utils from "./utils";
   // Note: Always check audioSwitch.enabled before playing sounds
   const synth = utils.createSynthSound();
   const bassDrum = utils.createBassDrumSound();
+  const hiHat = utils.createHiHatSound();
 
   // Create a root container that remains centered on the screen
   const root = new Pixi.Container();
@@ -82,7 +83,7 @@ import * as utils from "./utils";
       radius: 4,
       angleDivisions: 64, // 1/64th divisions
       soundType: "synth",
-      zIndex: 1, // Draw on top
+      zIndex: 2, // Draw on top
       placement: "random" as const, // Random placement
     },
     {
@@ -92,6 +93,15 @@ import * as utils from "./utils";
       angleDivisions: 16, // 1/16th divisions
       soundType: "bass",
       zIndex: 0, // Draw underneath
+      placement: "grid", // Grid-based placement
+    },
+    {
+      name: "hihat",
+      color: 0x44ff44,
+      radius: 6,
+      angleDivisions: 32, // 1/32nd divisions for more frequent hits
+      soundType: "hihat",
+      zIndex: 1, // Draw in middle
       placement: "grid", // Grid-based placement
     },
   ];
@@ -127,21 +137,42 @@ import * as utils from "./utils";
         });
       });
     } else if (config.placement === "grid") {
-      // Grid-based placement for bass pulsars with weighted randomness
+      // Grid-based placement for rhythmic pulsars with weighted randomness
       const angleStep = (Math.PI * 2) / config.angleDivisions;
 
-      // For each 1/16th division, decide based on beat strength
+      // For each 1/16th division, decide based on beat strength and pulsar type
       for (let index = 0; index < config.angleDivisions; index++) {
         let chance = 0.5; // default for weak beats
-        if (index % 16 === 0) {
-          chance = 1; // whole note (downbeat)
-        } else if (index % 8 === 0) {
-          chance = 0.9; // half note
-        } else if (index % 4 === 0) {
-          chance = 0.5; // quarter note
-        } else if (index % 2 === 0) {
-          chance = 0.2; // quarter note
+
+        if (config.soundType === "bass") {
+          // Bass drum pattern - emphasis on beats 1, 3, 5, 7 (strong beats)
+          if (index % 16 === 0) {
+            chance = 1; // beat 1 (downbeat) - always hit
+          } else if (index % 8 === 0) {
+            chance = 0.98; // beats 3, 5, 7 (half notes) - very high chance
+          } else if (index % 4 === 0) {
+            chance = 0.5; // other quarter notes - lower chance
+          } else if (index % 2 === 0) {
+            chance = 0.1; // eighth notes - very low chance
+          }
+        } else if (config.soundType === "hihat") {
+          // Hi-hat pattern - avoid beats 1, 3, 5, 7, emphasize off-beats
+          // Now working with 32 divisions instead of 16
+          if (index % 32 === 0) {
+            chance = 0.01; // beat 1 (downbeat) - almost never hit
+          } else if (index % 16 === 0) {
+            chance = 0.02; // beats 3, 5, 7 (half notes) - very low chance
+          } else if (index % 8 === 0) {
+            chance = 0.05; // beats 2, 4, 6, 8 (quarter notes) - very high chance
+          } else if (index % 4 === 0) {
+            chance = 0.1; // eighth notes - high chance for texture
+          } else if (index % 2 === 0) {
+            chance = 0.2; // sixteenth notes - moderate chance for detail
+          } else {
+            chance = 0.4; // thirty-second notes - some chance for extra detail
+          }
         }
+
         if (Math.random() < chance) {
           const angle = index * angleStep;
           // Randomly select from pentatonic radii
@@ -227,7 +258,15 @@ import * as utils from "./utils";
             const frequency = getFrequencyFromRadius(distance);
             synth.playSonarPulse(frequency);
           } else if (config.soundType === "bass") {
-            bassDrum.playBassDrum();
+            // Get frequency from pentatonic scale based on radius
+            const distance = pulsar.getDistance();
+            const frequency = getFrequencyFromRadius(distance);
+            bassDrum.playBassDrum(frequency);
+          } else if (config.soundType === "hihat") {
+            // Get frequency from pentatonic scale based on radius
+            const distance = pulsar.getDistance();
+            const frequency = getFrequencyFromRadius(distance);
+            hiHat.playHiHat(frequency);
           }
         }
 

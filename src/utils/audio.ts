@@ -57,7 +57,7 @@ export const createBassDrumSound = () => {
   const audioContext = new (window.AudioContext ||
     (window as any).webkitAudioContext)();
 
-  const playBassDrum = () => {
+  const playBassDrum = (frequency = 80) => {
     // Create oscillator for the bass drum sound
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -68,19 +68,20 @@ export const createBassDrumSound = () => {
     filter.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Configure the bass drum sound
-    oscillator.frequency.setValueAtTime(80, audioContext.currentTime); // Low frequency
+    // Configure the bass drum sound with variable frequency
+    const baseFreq = Math.max(40, frequency * 0.1); // Scale frequency down for bass range
+    oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(
-      20,
+      baseFreq * 0.25,
       audioContext.currentTime + 0.1
     ); // Drop to very low
     oscillator.type = "sine";
 
     // Add filter for bass drum character
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(200, audioContext.currentTime);
+    filter.frequency.setValueAtTime(baseFreq * 2.5, audioContext.currentTime);
     filter.frequency.exponentialRampToValueAtTime(
-      50,
+      baseFreq * 0.6,
       audioContext.currentTime + 0.1
     );
 
@@ -97,6 +98,73 @@ export const createBassDrumSound = () => {
   };
 
   return { playBassDrum };
+};
+
+/**
+ * Creates a hi-hat sound for rhythmic pulsars.
+ * Uses Web Audio API to generate a crisp, high-frequency sound.
+ *
+ * IMPORTANT: Always check audioSwitch.enabled before calling playHiHat()
+ * to respect user audio preferences and web audio autoplay policies.
+ */
+export const createHiHatSound = () => {
+  // Create audio context if it doesn't exist
+  const audioContext = new (window.AudioContext ||
+    (window as any).webkitAudioContext)();
+
+  const playHiHat = (frequency = 1200) => {
+    // Create oscillator for the hi-hat sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    const filter = audioContext.createBiquadFilter();
+    const noise = audioContext.createOscillator();
+
+    // Connect oscillator and noise to filter to gain to output
+    oscillator.connect(filter);
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Configure the hi-hat sound - airy and soft with variable frequency
+    const baseFreq = Math.max(800, frequency * 0.8); // Scale frequency for hi-hat range
+    oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      baseFreq * 0.33,
+      audioContext.currentTime + 0.15
+    ); // Slower drop for airy character
+    oscillator.type = "triangle"; // Softer, less harsh
+
+    // Add noise for airy character
+    noise.frequency.setValueAtTime(baseFreq * 5, audioContext.currentTime); // Scaled noise
+    noise.type = "triangle"; // Softer noise
+
+    // Add filter for hi-hat character
+    filter.type = "highpass";
+    filter.frequency.setValueAtTime(baseFreq * 0.67, audioContext.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(
+      baseFreq * 0.17,
+      audioContext.currentTime + 0.15
+    );
+
+    // Create envelope for the sound - airy and soft
+    gainNode.gain.setValueAtTime(0.08, audioContext.currentTime); // Lower volume
+    gainNode.gain.linearRampToValueAtTime(
+      0.04,
+      audioContext.currentTime + 0.02
+    ); // Quick drop
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.2
+    ); // Longer, softer decay
+
+    // Start and stop the sound
+    oscillator.start(audioContext.currentTime);
+    noise.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+    noise.stop(audioContext.currentTime + 0.2);
+  };
+
+  return { playHiHat };
 };
 
 /**
