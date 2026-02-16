@@ -30,7 +30,7 @@ import * as utils from "./utils";
     app,
     color: 0x44ffdd,
     lineWidth: 2,
-    rotationSpeed: 0.5, // Rotate at 0.5 radians per second
+    rotationSpeed: 1, // Rotate at 0.5 radians per second
   });
 
   // Define pentatonic scale across multiple octaves for broader placement
@@ -214,7 +214,7 @@ import * as utils from "./utils";
     radarSweep.update({ ms });
 
     // Calculate current and previous radar rotations using delta time
-    const currentRotation = (ms / 1000) * 0.5; // Match the rotation speed
+    const currentRotation = (ms / 1000) * 1; // Match the rotation speed
     const previousRotation = lastRadarRotation;
 
     // Normalize all angles to 0-2π range for consistent comparison
@@ -227,11 +227,14 @@ import * as utils from "./utils";
     const normalizedPrevious = normalizeAngle(previousRotation);
     const normalizedCurrent = normalizeAngle(currentRotation);
 
-    // Check all pulsars for radar detection
+    // Check all pulsars for radar detection and update visual effects
     let detectedCount = 0;
     allPulsars.forEach(({ pulsar, config }, index) => {
       const pulsarAngle = pulsar.getAngle();
       const normalizedPulsar = normalizeAngle(pulsarAngle);
+
+      // Update glow effect for all pulsars based on radar proximity
+      pulsar.updateGlow(normalizedCurrent);
 
       // Check if radar sweep passed over the pulsar between frames
       let isPulsarBetween = false;

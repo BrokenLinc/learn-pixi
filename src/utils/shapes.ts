@@ -309,6 +309,33 @@ export const createPulsar = ({
     return normalizedDiff < tolerance;
   };
 
+  // Add glow ring for visual feedback
+  const glowRing = new Graphics();
+  container.addChild(glowRing);
+
+  // Function to update glow based on radar proximity
+  const updateGlow = (radarAngle: number) => {
+    const pulsarAngle = getAngle();
+    const angleDiff = Math.abs(radarAngle - pulsarAngle);
+    const normalizedDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+
+    // Calculate proximity (0 = far, 1 = very close)
+    const proximity = Math.max(0, 1 - normalizedDiff / 0.3); // 0.3 radians = detection zone
+
+    // Update glow ring
+    glowRing.clear();
+    if (proximity > 0.1) {
+      // Only show glow when close enough
+      const glowRadius = radius + 8 + proximity * 12; // Scale with proximity
+      const glowAlpha = proximity * 0.6; // Opacity based on proximity
+
+      glowRing.circle(0, 0, glowRadius).fill({
+        color: color,
+        alpha: glowAlpha,
+      });
+    }
+  };
+
   return {
     container,
     graphics,
@@ -316,5 +343,6 @@ export const createPulsar = ({
     getDistance,
     isDetectedByRadar,
     regeneratePosition: draw,
+    updateGlow,
   };
 };
